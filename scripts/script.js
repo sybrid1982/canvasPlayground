@@ -20,10 +20,25 @@ var ctx = canvas.getContext("2d");
         ctx.lineTo(numSquaresX * squareSide, y * squareSide);
         ctx.stroke();
     }
-
-    document.addEventListener("click", onClick, false);
+    console.log('Grid drawn');
+    var boundOnClick = onClick.bind(this, canvas);
+    document.addEventListener("click", boundOnClick, false);
 })();
 
-var onClick = function(event) {
+function onClick (canvas, event) {
+    var coords = getMousePosRelativeToCanvas(canvas, event);
     console.log("Click at " + event.x + ", " + event.y);
+    console.log("That translates to " + coords.toString());
+}
+
+function getMousePosRelativeToCanvas (canvas, event) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: event.x - rect.left,
+        y: event.y - rect.top,
+        toString: (function(){
+            var string = this.x + ", " + this.y;
+            return string;
+        })
+    };
 }
