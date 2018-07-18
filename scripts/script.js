@@ -30,6 +30,7 @@ var numSquaresY = 25;
 function onClick (canvas, event) {
     var coords = getMousePosRelativeToCanvas(canvas, event);
     var gridCoords = getGridCoordFromCanvasPosition(coords);
+    colorClickedSquare(gridCoords);
     console.log("Click at " + event.x + ", " + event.y);
     console.log("That translates to " + coords.toString());
     console.log("That translates to a grid position of " + gridCoords.toString());
@@ -70,4 +71,27 @@ function getGridCoordFromCanvasPosition (position) {
             })
         };
     }
+}
+
+function colorClickedSquare(gridPosition) {
+    var startX, startY, endX, endY;
+    var color = getRandomColor();
+    ctx.fillStyle = color;
+
+    // If we want to leave the lines behind, our x and y for the fill need +1 and -2 for the fill start and end respectively
+    startX = gridPosition.x * squareSide + 1;
+    startY = gridPosition.y * squareSide + 1;
+    endX = squareSide - 2;
+    endY = squareSide - 2;
+    ctx.fillRect(startX, startY, endX, endY); 
+}
+
+// Cribbed from jagadesha on Medium
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for(var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
