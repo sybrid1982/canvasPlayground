@@ -1,10 +1,13 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-// Variables
+// Constant Variables
 var squareSide = 20;
 var numSquaresX = 25;
 var numSquaresY = 25;
+
+// Variable Variables
+var drawModeOn = true;
 
 //ctx.fillStyle = "#FF0000";
 //ctx.fillRect(0,0,150,75);
@@ -23,17 +26,28 @@ var numSquaresY = 25;
         ctx.stroke();
     }
     console.log('Grid drawn');
+
+    // Setup the click listener
     var boundOnClick = onClick.bind(this, canvas);
     document.addEventListener("click", boundOnClick, false);
+})();
+
+(function(){
+    document.getElementById('drawToggle').onclick = drawModeChanged;
 })();
 
 function onClick (canvas, event) {
     var coords = getMousePosRelativeToCanvas(canvas, event);
     var gridCoords = getGridCoordFromCanvasPosition(coords);
-    colorClickedSquare(gridCoords);
+
     console.log("Click at " + event.x + ", " + event.y);
     console.log("That translates to " + coords.toString());
-    console.log("That translates to a grid position of " + gridCoords.toString());
+    if(gridCoords.x !== -1) {
+        colorClickedSquare(gridCoords);
+        console.log("That translates to a grid position of " + gridCoords.toString());
+    } else {
+        console.log("That click was off the grid");
+    }
 }
 
 function getMousePosRelativeToCanvas (canvas, event) {
@@ -75,7 +89,13 @@ function getGridCoordFromCanvasPosition (position) {
 
 function colorClickedSquare(gridPosition) {
     var startX, startY, endX, endY;
-    var color = getRandomColor();
+    var color;
+    if(drawModeOn){
+        color = getRandomColor();
+    } else {
+        color = '#ffffff'
+    }
+
     ctx.fillStyle = color;
 
     // If we want to leave the lines behind, our x and y for the fill need +1 and -2 for the fill start and end respectively
@@ -83,6 +103,7 @@ function colorClickedSquare(gridPosition) {
     startY = gridPosition.y * squareSide + 1;
     endX = squareSide - 2;
     endY = squareSide - 2;
+
     ctx.fillRect(startX, startY, endX, endY); 
 }
 
@@ -94,4 +115,18 @@ function getRandomColor() {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+}
+
+function drawModeChanged() {
+    var buttonString;
+    drawModeOn = !drawModeOn;
+    if(drawModeOn) {
+        // set the text of the button to draw mode on
+        buttonString = 'Draw Mode On';
+    } else {
+        // set the text of the button to draw mode off
+        buttonString = 'Draw Mode Off';
+    }
+
+    document.getElementById('drawToggle').textContent = buttonString;
 }
