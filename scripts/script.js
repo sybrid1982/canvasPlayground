@@ -67,7 +67,7 @@ function getGridCoordFromCanvasPosition (position) {
     calcx = Math.floor(position.x / squareSide);
     calcy = Math.floor(position.y / squareSide);
 
-    if( calcx < 0 || calcx > numSquaresX || calcy < 0 || calcy > numSquaresY) {
+    if( calcx < 0 || calcx >= numSquaresX || calcy < 0 || calcy >= numSquaresY) {
         return {
             x: -1,
             y: -1,
@@ -122,10 +122,10 @@ function drawModeChanged() {
     drawModeOn = !drawModeOn;
     if(drawModeOn) {
         // set the text of the button to draw mode on
-        buttonString = 'Draw Mode On';
+        buttonString = 'Draw Mode';
     } else {
         // set the text of the button to draw mode off
-        buttonString = 'Draw Mode Off';
+        buttonString = 'Erase Mode';
     }
 
     document.getElementById('drawToggle').textContent = buttonString;
