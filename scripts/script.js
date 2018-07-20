@@ -2,9 +2,14 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 // Constant Variables
-var squareSide = 20;
-var numSquaresX = 25;
-var numSquaresY = 25;
+var squareSide = 50;
+var numSquaresX = 10;
+var numSquaresY = 10;
+var numMines = 15;
+var directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+// Calculated Variables
+var grid, gridSize;
 
 // Variable Variables
 var drawModeOn = true;
@@ -36,14 +41,105 @@ var drawModeOn = true;
     document.getElementById('drawToggle').onclick = drawModeChanged;
 })();
 
+// SETUP GAME
+(function(){
+    gridSize = numSquaresX * numSquaresY;
+    var minesToPlace = numMines;
+    var blankColor = '#C0C0C0';
+    
+    var Square = function(index, position){
+        this.hasMine = false;
+        this.revealed = false;
+        this.index = index;
+        this.position = position;
+        directions.forEach(function(direction) {
+            console.log(direction + ' neighbor being set to -1');
+            this[direction] = -1;
+        });
+        console.log(this.N + ', ' + this['N']);
+    };
+
+    Square.prototype.setNeighbor = function(neighbor, direction){
+        this[direction] = neighbor;
+        if(neighbor !== -1 ){
+            var oppositeDirection = getOppositeDirection(direction);
+            neighbor[direction] = this;
+        }
+    };
+
+    grid = [];
+    for(var index = 0; index < gridSize; index++) {
+        var coords = getCoordsFromIndex(index);
+        var square = new Square(index, coords);
+        // Set neighbors for the new square
+        // Logic outline:  If the x coord is > 0, then there should be a neighbor to the west
+        // That neighbor will be the one at index - 1
+        if(coords.x > 0) {
+            var wNeighbor = grid[index-1];
+            square.setNeighbor(wNeighbor, 'W');
+
+            // If Y is > 0, X and Y > 0 and we have a northwest neighbor
+            if(coords.y > 0) {
+                // That neighbor is at index-gridSizeX
+                var nwNeighbor = grid[index-numSquaresX];
+                square.setNeighbor(nwNeighbor, 'NW');
+            } 
+        } else
+        // Set North neighbors if y > 0
+        if(coords.y > 0) {
+            var nNeighbor = grid[index-numSquaresX];
+            square.setNeighbor(nNeighbor, 'N');
+
+            // If Y > 0, then we may have a NE neighbor, but only if we aren't at gridSizeX index
+            if(coords.x < numSquaresX) {
+                var neNeighbor = grid[index-numSquaresX + 1];
+                square.setNeighbor(neNeighbor, 'NE');
+            }
+        }
+
+        grid.push(square);
+        colorSquare(coords, blankColor);
+    }
+
+    if(minesToPlace > gridSize) {
+        minesToPlace = gridSize;
+    }
+
+    var loopCount = 0;
+    placeMines(minesToPlace);
+})();
+
+function placeMines(minesToPlace) {
+    var loopCount = 0;
+    while(minesToPlace > 0 && loopCount < 50) {
+        var indexToMine = Math.floor(Math.random()*gridSize);
+        if(grid[indexToMine].hasMine === false) {
+            grid[indexToMine].hasMine = true;
+            minesToPlace--;
+        }
+        loopCount++;
+    }
+    console.log(minesToPlace + " mines left to place");
+}
+
 function onClick (canvas, event) {
     var coords = getMousePosRelativeToCanvas(canvas, event);
     var gridCoords = getGridCoordFromCanvasPosition(coords);
+    var colorClear = '#ffffff';
+    var colorMine = '#ff0000';
 
     console.log("Click at " + event.x + ", " + event.y);
     console.log("That translates to " + coords.toString());
     if(gridCoords.x !== -1) {
-        colorClickedSquare(gridCoords);
+        if(!checkForMine(gridCoords)){
+            colorSquare(gridCoords, colorClear);
+            var numMinesAround = checkNeighborsForMines(gridCoords);
+            if(numMinesAround > 0) {
+                drawTextAtCoords(numMinesAround, gridCoords);
+            }
+        } else {
+            colorSquare(gridCoords, colorMine);
+        }
         console.log("That translates to a grid position of " + gridCoords.toString());
     } else {
         console.log("That click was off the grid");
@@ -87,7 +183,7 @@ function getGridCoordFromCanvasPosition (position) {
     }
 }
 
-function colorClickedSquare(gridPosition) {
+function returnRandomColor(gridPosition) {
     var startX, startY, endX, endY;
     var color;
     if(drawModeOn){
@@ -95,7 +191,10 @@ function colorClickedSquare(gridPosition) {
     } else {
         color = '#ffffff'
     }
+    return color;
+}
 
+function colorSquare(gridPosition, color){
     ctx.fillStyle = color;
 
     // If we want to leave the lines behind, our x and y for the fill need +1 and -2 for the fill start and end respectively
@@ -129,4 +228,93 @@ function drawModeChanged() {
     }
 
     document.getElementById('drawToggle').textContent = buttonString;
+}
+
+function checkForMine(coords) {
+    var index = getIndexFromCoords(coords);
+    console.log(index);
+    if(grid[index].hasMine) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkForMineWithIndex(index){
+    if(index < 0 || index > gridSize) {
+        return false;
+    }
+
+    if(grid[index]) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Given a set of coordinates, returns how many mines are around that set of coordinates
+// If it's greater than 0, then a later function will write that number as text in the square
+function checkNeighborsForMines(coords) {
+    var square = getSquareFromCoords(coords);
+
+    var numberOfNeighborsWithMines = 0;
+
+    directions.forEach(function(direction) {
+        console.log(direction);
+        var neighbor = square[direction];
+        console.log(direction + ' neighbor is ' + neighbor);
+        if(neighbor !== -1 && neighbor.hasMine) {
+            numberOfNeighborsWithMines++;
+        }
+    });
+
+    return numberOfNeighborsWithMines;
+}
+
+function getCoordsFromIndex(index) {
+    var coordx = index % numSquaresX;
+    var coordy = Math.floor(index / numSquaresX);
+
+    return {
+        x: coordx,
+        y: coordy
+    };
+}
+
+function getIndexFromCoords(coords) {
+    return (coords.x + coords.y * numSquaresX);
+}
+
+function getOppositeDirection(direction) {
+    switch(direction) {
+        case 'N':
+            return 'S';
+        case 'NE':
+            return 'SW';
+        case 'E':
+            return 'W';
+        case 'SE':
+            return 'NW';
+        case 'S':
+            return 'N';
+        case 'SW':
+            return 'NE';
+        case 'W':
+            return 'E';
+        case 'NW':
+            return 'SE';
+    }
+}
+
+function getSquareFromCoords(coords) {
+    var index = getIndexFromCoords(coords);
+    return grid[index];
+}
+
+function drawTextAtCoords(text, coords) {
+    ctx.textAlign='center';
+    var positionx = coords.x + 10;
+    var positiony = coords.y + 10;
+
+    ctx.fillText(text, positionx, positiony);
 }
