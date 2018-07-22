@@ -8,9 +8,18 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <form>
+        <label for='gridSizeX'>Number of Squares per Side For Grid</label>
+        <input type='text' id='gridSize' value=10>
+
+        <label for='gridSizeX'>Number of Mines</label>
+        <input type='text' id='numOfMines' value=15>
+
+        <button type='button' id='startNewGame'>Start New Game</button>
+    </form>
     <canvas id='myCanvas' width="500" height="500"></canvas>
 
-    <button id='drawToggle'>Draw Mode</button>
+    <button id='drawToggle'>Reveal Mode</button>
     
     <script src="scripts/script.js"></script>
 </body>

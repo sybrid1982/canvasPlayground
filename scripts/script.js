@@ -12,7 +12,8 @@ var directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 var grid, gridSize;
 
 // Variable Variables
-var drawModeOn = true;
+var revealModeOn = true;
+var gameOver = false;
 
 // Constructor for Square objects
 var Square = function(index, position){
@@ -27,10 +28,18 @@ Square.prototype.setNeighbor = function(neighbor, direction){
     this[direction] = neighbor;
 };
 
-//ctx.fillStyle = "#FF0000";
-//ctx.fillRect(0,0,150,75);
-//Draw a grid 30x20 squares
-(function(){
+function setupGrid(){
+    // First, get the input from the fields
+    var inSizeX = document.getElementById('gridSize').value;
+    // Check if the grid size 
+    if(isNaN(inSizeX)) {
+        inSizeX = 10;
+    } else {
+        inSizeX = Math.floor(inSizeX);
+    }
+
+    numSquaresX = numSquaresY = inSizeX;
+
     // This loop should draw all the vertical lines
     for(var x = 0; x <= numSquaresX; x++) {
         ctx.moveTo(x * squareSide, 0);
@@ -43,24 +52,21 @@ Square.prototype.setNeighbor = function(neighbor, direction){
         ctx.lineTo(numSquaresX * squareSide, y * squareSide);
         ctx.stroke();
     }
-    console.log('Grid drawn');
 
     // Setup the click listener
     var boundOnClick = onClick.bind(this, canvas);
     document.addEventListener("click", boundOnClick, false);
-})();
+}
 
 (function(){
     document.getElementById('drawToggle').onclick = drawModeChanged;
 })();
 
 // SETUP GAME
-(function(){
+function setupGame(){
     gridSize = numSquaresX * numSquaresY;
     var minesToPlace = numMines;
     var blankColor = '#C0C0C0';
-    
-
 
     grid = [];
     for(var index = 0; index < gridSize; index++) {
@@ -104,7 +110,7 @@ Square.prototype.setNeighbor = function(neighbor, direction){
 
     var loopCount = 0;
     placeMines(minesToPlace);
-})();
+}
 
 function placeMines(minesToPlace) {
     var loopCount = 0;
@@ -120,26 +126,24 @@ function placeMines(minesToPlace) {
 }
 
 function onClick (canvas, event) {
-    var coords = getMousePosRelativeToCanvas(canvas, event);
-    var gridCoords = getGridCoordFromCanvasPosition(coords);
-    var colorClear = '#ffffff';
-    var colorMine = '#ff0000';
+    if(!gameOver) {
+        var coords = getMousePosRelativeToCanvas(canvas, event);
+        var gridCoords = getGridCoordFromCanvasPosition(coords);
+        var colorClear = '#ffffff';
+        var colorMine = '#ff0000';
 
-    console.log("Click at " + event.x + ", " + event.y);
-    console.log("That translates to " + coords.toString());
-    if(gridCoords.x !== -1) {
-        if(!checkForMine(gridCoords)){
-            colorSquare(gridCoords, colorClear);
-            var numMinesAround = checkNeighborsForMines(gridCoords);
-            if(numMinesAround > 0) {
-                drawTextAtCoords(numMinesAround, gridCoords);
+        if(gridCoords.x !== -1) {
+            if(!checkForMine(gridCoords)){
+                colorSquare(gridCoords, colorClear);
+                var numMinesAround = checkNeighborsForMines(gridCoords);
+                if(numMinesAround > 0) {
+                    drawTextAtCoords(numMinesAround, gridCoords);
+                }
+            } else {
+                colorSquare(gridCoords, colorMine);
+                gameOver = true;
             }
-        } else {
-            colorSquare(gridCoords, colorMine);
         }
-        console.log("That translates to a grid position of " + gridCoords.toString());
-    } else {
-        console.log("That click was off the grid");
     }
 }
 
@@ -183,7 +187,7 @@ function getGridCoordFromCanvasPosition (position) {
 function returnRandomColor(gridPosition) {
     var startX, startY, endX, endY;
     var color;
-    if(drawModeOn){
+    if(revealModeOn){
         color = getRandomColor();
     } else {
         color = '#ffffff'
@@ -215,13 +219,13 @@ function getRandomColor() {
 
 function drawModeChanged() {
     var buttonString;
-    drawModeOn = !drawModeOn;
-    if(drawModeOn) {
-        // set the text of the button to draw mode on
-        buttonString = 'Draw Mode';
+    revealModeOn = !revealModeOn;
+    if(revealModeOn) {
+        // set the text of the button to reveal mode
+        buttonString = 'Reveal Mode';
     } else {
-        // set the text of the button to draw mode off
-        buttonString = 'Erase Mode';
+        // set the text of the button to flag mode
+        buttonString = 'Flag Mode';
     }
 
     document.getElementById('drawToggle').textContent = buttonString;
@@ -304,10 +308,14 @@ function getSquareFromCoords(coords) {
 function drawTextAtCoords(text, coords) {
     ctx.textAlign='center';
     ctx.fillStyle = '#000000';
-    ctx.font = '20pt Arial';
+    // We could put a switch in here to make the text a different color for different values of mines
+    ctx.font = Math.floor(squareSide / 2) + 'pt Arial';
 
     var positionx = coords.x * squareSide + 0.5 * squareSide;
     var positiony = coords.y * squareSide + 0.75 * squareSide;
 
     ctx.fillText(text, positionx, positiony);
 }
+
+setupGrid();
+setupGame();
