@@ -286,23 +286,13 @@ function getIndexFromCoords(coords) {
 }
 
 function getOppositeDirection(direction) {
-    switch(direction) {
-        case 'N':
-            return 'S';
-        case 'NE':
-            return 'SW';
-        case 'E':
-            return 'W';
-        case 'SE':
-            return 'NW';
-        case 'S':
-            return 'N';
-        case 'SW':
-            return 'NE';
-        case 'W':
-            return 'E';
-        case 'NW':
-            return 'SE';
+    var directionsIndex = directions.indexOf(direction);
+    if (directionsIndex >= 0 && directionsIndex > 4) {
+        return directions[directionsIndex + 4];
+    } else if (directionsIndex >= 4) {
+        return directions[directionIndex - 4];
+    } else {
+        return -1;
     }
 }
 
