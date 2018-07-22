@@ -14,6 +14,19 @@ var grid, gridSize;
 // Variable Variables
 var drawModeOn = true;
 
+// Constructor for Square objects
+var Square = function(index, position){
+    this.hasMine = false;
+    this.revealed = false;
+    this.index = index;
+    this.position = position;
+    this.N = this.NE = this.E = this.SE = this.S = this.SW = this.W = this.NW = -1;
+};
+
+Square.prototype.setNeighbor = function(neighbor, direction){
+    this[direction] = neighbor;
+};
+
 //ctx.fillStyle = "#FF0000";
 //ctx.fillRect(0,0,150,75);
 //Draw a grid 30x20 squares
@@ -47,25 +60,7 @@ var drawModeOn = true;
     var minesToPlace = numMines;
     var blankColor = '#C0C0C0';
     
-    var Square = function(index, position){
-        this.hasMine = false;
-        this.revealed = false;
-        this.index = index;
-        this.position = position;
-        directions.forEach(function(direction) {
-            console.log(direction + ' neighbor being set to -1');
-            this[direction] = -1;
-        });
-        console.log(this.N + ', ' + this['N']);
-    };
 
-    Square.prototype.setNeighbor = function(neighbor, direction){
-        this[direction] = neighbor;
-        if(neighbor !== -1 ){
-            var oppositeDirection = getOppositeDirection(direction);
-            neighbor[direction] = this;
-        }
-    };
 
     grid = [];
     for(var index = 0; index < gridSize; index++) {
@@ -77,23 +72,25 @@ var drawModeOn = true;
         if(coords.x > 0) {
             var wNeighbor = grid[index-1];
             square.setNeighbor(wNeighbor, 'W');
-
+            wNeighbor.setNeighbor(square, 'E');
             // If Y is > 0, X and Y > 0 and we have a northwest neighbor
             if(coords.y > 0) {
                 // That neighbor is at index-gridSizeX
                 var nwNeighbor = grid[index-numSquaresX];
                 square.setNeighbor(nwNeighbor, 'NW');
+                nwNeighbor.setNeighbor(square, 'SE');
             } 
-        } else
+        }
         // Set North neighbors if y > 0
         if(coords.y > 0) {
             var nNeighbor = grid[index-numSquaresX];
             square.setNeighbor(nNeighbor, 'N');
-
+            nNeighbor.setNeighbor(square, 'S');
             // If Y > 0, then we may have a NE neighbor, but only if we aren't at gridSizeX index
             if(coords.x < numSquaresX) {
                 var neNeighbor = grid[index-numSquaresX + 1];
                 square.setNeighbor(neNeighbor, 'NE');
+                neNeighbor.setNeighbor(square, 'SW');
             }
         }
 
@@ -232,7 +229,7 @@ function drawModeChanged() {
 
 function checkForMine(coords) {
     var index = getIndexFromCoords(coords);
-    console.log(index);
+
     if(grid[index].hasMine) {
         return true;
     } else {
@@ -267,7 +264,7 @@ function checkNeighborsForMines(coords) {
             numberOfNeighborsWithMines++;
         }
     });
-
+    console.log('Number of neighbors with mines = ' + numberOfNeighborsWithMines);
     return numberOfNeighborsWithMines;
 }
 
@@ -287,10 +284,13 @@ function getIndexFromCoords(coords) {
 
 function getOppositeDirection(direction) {
     var directionsIndex = directions.indexOf(direction);
-    if (directionsIndex >= 0 && directionsIndex > 4) {
-        return directions[directionsIndex + 4];
+    console.log(directionsIndex);
+    if (directionsIndex >= 0 && directionsIndex < 4) {
+        var oppositeIndex = directionsIndex + 4;
+        return directions[oppositeIndex];
     } else if (directionsIndex >= 4) {
-        return directions[directionIndex - 4];
+        var oppositeIndex = directionsIndex - 4;
+        return directions[oppositeIndex];
     } else {
         return -1;
     }
@@ -303,8 +303,11 @@ function getSquareFromCoords(coords) {
 
 function drawTextAtCoords(text, coords) {
     ctx.textAlign='center';
-    var positionx = coords.x + 10;
-    var positiony = coords.y + 10;
+    ctx.fillStyle = '#000000';
+    ctx.font = '20pt Arial';
+
+    var positionx = coords.x * squareSide + 0.5 * squareSide;
+    var positiony = coords.y * squareSide + 0.75 * squareSide;
 
     ctx.fillText(text, positionx, positiony);
 }
