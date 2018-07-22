@@ -2,6 +2,7 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 // Constant Variables
+var canvasSize = 500;
 var squareSide = 50;
 var numSquaresX = 10;
 var numSquaresY = 10;
@@ -39,6 +40,7 @@ function setupGrid(){
     }
 
     numSquaresX = numSquaresY = inSizeX;
+    squareSide = canvasSize / numSquaresX;
 
     // This loop should draw all the vertical lines
     for(var x = 0; x <= numSquaresX; x++) {
@@ -60,10 +62,12 @@ function setupGrid(){
 
 (function(){
     document.getElementById('drawToggle').onclick = drawModeChanged;
+    document.getElementById('startNewGame').onclick = startNewGame;
 })();
 
 // SETUP GAME
 function setupGame(){
+    gameOver = false;
     gridSize = numSquaresX * numSquaresY;
     var minesToPlace = numMines;
     var blankColor = '#C0C0C0';
@@ -317,5 +321,9 @@ function drawTextAtCoords(text, coords) {
     ctx.fillText(text, positionx, positiony);
 }
 
-setupGrid();
-setupGame();
+function startNewGame() {
+    setupGrid();
+    setupGame();
+}
+
+startNewGame();
