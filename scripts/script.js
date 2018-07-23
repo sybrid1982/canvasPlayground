@@ -8,6 +8,8 @@ var numSquaresX = 10;
 var numSquaresY = 10;
 var numMines = 15;
 var directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+var flagIMG = setupFlagImage();
+var blankColor = '#C0C0C0';
 
 // Calculated Variables
 var grid, gridSize;
@@ -81,7 +83,7 @@ function setupGame(){
     }
     var minesToPlace = numMines;
 
-    var blankColor = '#C0C0C0';
+
 
     grid = [];
     for(var index = 0; index < gridSize; index++) {
@@ -167,6 +169,11 @@ function onClick (canvas, event) {
             } else {
                 square.flagged = !square.flagged;
                 // Draw/remove flag at flagged square
+                if(square.flagged) {
+                    drawFlag(gridCoords);
+                } else {
+                    colorSquare(gridCoords, blankColor);
+                }
             }
         }
     }
@@ -343,9 +350,22 @@ function drawTextAtCoords(text, coords) {
     ctx.fillText(text, positionx, positiony);
 }
 
+function setupFlagImage() {
+    flag_image = new Image();
+    flag_image.src = "../Images/simple-flag-two-color.jpg";
+    return flag_image;
+}
+
 function startNewGame() {
     setupGrid();
     setupGame();
+}
+
+function drawFlag(coords){
+    var positionx = coords.x * squareSide + 0.1 * squareSide;
+    var positiony = coords.y * squareSide + 0.1 * squareSide;
+    console.log("DrawFlag called");
+    ctx.drawImage(flagIMG, positionx, positiony, squareSide * .8, squareSide * .8);
 }
 
 startNewGame();
