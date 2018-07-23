@@ -363,13 +363,31 @@ let GameSession = function() {
 
     function drawTextAtCoords(text, coords) {
         ctx.textAlign='center';
-        ctx.fillStyle = '#000000';
         // We could put a switch in here to make the text a different color for different values of mines
         ctx.font = Math.floor(squareSide / 2) + 'pt Arial';
+        var color = '#000000';
+        
+        // Set the color for the text
+        // 1 will be black, 2 blue, 3 yellow, and 4+ red
+        switch(text) {
+            case 1: 
+                color = '#000000';
+                break;
+            case 2:
+                color = '#0000ff';
+                break;
+            case 3:
+                color = '#ffff00';
+                break;
+            default:
+                color = '#ff0000';
+                break;
+        }
 
         var positionx = coords.x * squareSide + 0.5 * squareSide;
         var positiony = coords.y * squareSide + 0.75 * squareSide;
 
+        ctx.fillStyle = color;
         ctx.fillText(text, positionx, positiony);
     }
 
