@@ -98,30 +98,7 @@ let GameSession = function() {
             // Set neighbors for the new square
             // Logic outline:  If the x coord is > 0, then there should be a neighbor to the west
             // That neighbor will be the one at index - 1
-            if(coords.x > 0) {
-                var wNeighbor = grid[index-1];
-                square.setNeighbor(wNeighbor, 'W');
-                wNeighbor.setNeighbor(square, 'E');
-                // If Y is > 0, X and Y > 0 and we have a northwest neighbor
-                if(coords.y > 0) {
-                    // That neighbor is at index-gridSizeX
-                    var nwNeighbor = grid[index-numSquaresX-1];
-                    square.setNeighbor(nwNeighbor, 'NW');
-                    nwNeighbor.setNeighbor(square, 'SE');
-                } 
-            }
-            // Set North neighbors if y > 0
-            if(coords.y > 0) {
-                var nNeighbor = grid[index-numSquaresX];
-                square.setNeighbor(nNeighbor, 'N');
-                nNeighbor.setNeighbor(square, 'S');
-                // If Y > 0, then we may have a NE neighbor, but only if we aren't at gridSizeX index
-                if(coords.x < numSquaresX) {
-                    var neNeighbor = grid[index-numSquaresX + 1];
-                    square.setNeighbor(neNeighbor, 'NE');
-                    neNeighbor.setNeighbor(square, 'SW');
-                }
-            }
+            setNeighbors();
 
             grid.push(square);
             colorSquare(coords, blankColor);
@@ -133,6 +110,33 @@ let GameSession = function() {
 
         var loopCount = 0;
         placeMines(minesToPlace);
+
+        function setNeighbors() {
+            if (coords.x > 0) {
+                var wNeighbor = grid[index - 1];
+                square.setNeighbor(wNeighbor, 'W');
+                wNeighbor.setNeighbor(square, 'E');
+                // If Y is > 0, X and Y > 0 and we have a northwest neighbor
+                if (coords.y > 0) {
+                    // That neighbor is at index-gridSizeX
+                    var nwNeighbor = grid[index - numSquaresX - 1];
+                    square.setNeighbor(nwNeighbor, 'NW');
+                    nwNeighbor.setNeighbor(square, 'SE');
+                }
+            }
+            // Set North neighbors if y > 0
+            if (coords.y > 0) {
+                var nNeighbor = grid[index - numSquaresX];
+                square.setNeighbor(nNeighbor, 'N');
+                nNeighbor.setNeighbor(square, 'S');
+                // If Y > 0, then we may have a NE neighbor, but only if we aren't at gridSizeX index
+                if (coords.x < numSquaresX - 1) {
+                    var neNeighbor = grid[index - numSquaresX + 1];
+                    square.setNeighbor(neNeighbor, 'NE');
+                    neNeighbor.setNeighbor(square, 'SW');
+                }
+            }
+        }
     }
 
     function placeMines(minesToPlace) {
@@ -159,7 +163,10 @@ let GameSession = function() {
             if(gridCoords.x !== -1) {
                 // If we are on the grid, we can get the square
                 var square = getSquareFromCoords(gridCoords);
-                console.log(`${gridCoords} square revealed is ${square.revealed} and flagged is ${square.flagged}`)
+                console.log(`${gridCoords} square revealed is ${square.revealed} and flagged is ${square.flagged}`);
+                directions.forEach(function(direction) {
+                    console.log(`${direction} neighbor is ${getCoordsFromIndex(square[direction].index).toString()}`);
+                });
                 // If we are in reveal mode, reveal the square if it is not revealed or flagged
                 if(revealModeOn && !square.revealed && !square.flagged) {  
                     if(!checkForMine(gridCoords)){
@@ -321,7 +328,10 @@ let GameSession = function() {
 
         return {
             x: coordx,
-            y: coordy
+            y: coordy,
+            toString: function() {
+                return `${coordx}, ${coordy}`
+            }
         };
     }
 
