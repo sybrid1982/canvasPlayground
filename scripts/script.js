@@ -15,11 +15,13 @@ var grid, gridSize;
 // Variable Variables
 var revealModeOn = true;
 var gameOver = false;
+var flaggedSquares = 0;
 
 // Constructor for Square objects
 var Square = function(index, position){
     this.hasMine = false;
     this.revealed = false;
+    this.flagged = false;
     this.index = index;
     this.position = position;
     this.N = this.NE = this.E = this.SE = this.S = this.SW = this.W = this.NW = -1;
@@ -68,8 +70,17 @@ function setupGrid(){
 // SETUP GAME
 function setupGame(){
     gameOver = false;
+    flaggedSquares = 0;
+
     gridSize = numSquaresX * numSquaresY;
+    numMines = document.getElementById('numOfMines').value;
+    if(isNaN(numMines)){
+        numMines = 15;
+    } else {
+        numMines = Math.floor(numMines);
+    }
     var minesToPlace = numMines;
+
     var blankColor = '#C0C0C0';
 
     grid = [];
@@ -86,7 +97,7 @@ function setupGame(){
             // If Y is > 0, X and Y > 0 and we have a northwest neighbor
             if(coords.y > 0) {
                 // That neighbor is at index-gridSizeX
-                var nwNeighbor = grid[index-numSquaresX];
+                var nwNeighbor = grid[index-numSquaresX-1];
                 square.setNeighbor(nwNeighbor, 'NW');
                 nwNeighbor.setNeighbor(square, 'SE');
             } 
@@ -135,21 +146,32 @@ function onClick (canvas, event) {
         var gridCoords = getGridCoordFromCanvasPosition(coords);
         var colorClear = '#ffffff';
         var colorMine = '#ff0000';
-
+        console.log('click');
+        // First, check if the click is on the grid
         if(gridCoords.x !== -1) {
-            if(!checkForMine(gridCoords)){
-                colorSquare(gridCoords, colorClear);
-                var numMinesAround = checkNeighborsForMines(gridCoords);
-                if(numMinesAround > 0) {
-                    drawTextAtCoords(numMinesAround, gridCoords);
+            // If we are on the grid, we can get the square
+            var square = getSquareFromCoords(gridCoords);
+            // If we are in reveal mode, reveal the square if it is not revealed or flagged
+            if(revealModeOn && !square.revealed && !square.flagged) {  
+                if(!checkForMine(gridCoords)){
+                    square.revealed = true;
+                    colorSquare(gridCoords, colorClear);
+                    var numMinesAround = checkNeighborsForMines(gridCoords);
+                    if(numMinesAround > 0) {
+                        drawTextAtCoords(numMinesAround, gridCoords);
+                    }
+                } else {
+                    colorSquare(gridCoords, colorMine);
+                    gameOver = true;
                 }
             } else {
-                colorSquare(gridCoords, colorMine);
-                gameOver = true;
+                square.flagged = !square.flagged;
+                // Draw/remove flag at flagged square
             }
         }
     }
 }
+
 
 function getMousePosRelativeToCanvas (canvas, event) {
     var rect = canvas.getBoundingClientRect();
