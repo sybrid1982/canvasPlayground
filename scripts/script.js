@@ -13,6 +13,7 @@ let GameSession = function() {
     let flagIMG = setupFlagImage();
     let blankColor = '#C0C0C0';
 
+
     // Calculated letiables
     let grid, gridSize;
 
@@ -20,6 +21,7 @@ let GameSession = function() {
     let revealModeOn = true;
     let gameOver = false;
     let flaggedSquares = 0;
+    let correctlyPlacedFlags = 0;
 
     // Constructor for Square objects
     let Square = function(index, position){
@@ -108,7 +110,6 @@ let GameSession = function() {
             minesToPlace = gridSize;
         }
 
-        let loopCount = 0;
         placeMines(minesToPlace);
 
         function setNeighbors(coords, square, index) {
@@ -163,23 +164,13 @@ let GameSession = function() {
             if(gridCoords.x !== -1) {
                 // If we are on the grid, we can get the square
                 let square = getSquareFromCoords(gridCoords);
-                console.log(`${gridCoords} square revealed is ${square.revealed} and flagged is ${square.flagged}`);
-                directions.forEach(function(direction) {
-                    console.log(`${direction} neighbor is ${getCoordsFromIndex(square[direction].index).toString()}`);
-                });
+                // console.log(`${gridCoords} square revealed is ${square.revealed} and flagged is ${square.flagged}`);
+                // directions.forEach(function(direction) {
+                //     console.log(`${direction} neighbor is ${getCoordsFromIndex(square[direction].index).toString()}`);
+                // });
                 // If we are in reveal mode, reveal the square if it is not revealed or flagged
                 if(revealModeOn && !square.revealed && !square.flagged) {  
-                    if(!checkForMine(gridCoords)){
-                        square.revealed = true;
-                        colorSquare(gridCoords, colorClear);
-                        let numMinesAround = checkNeighborsForMines(gridCoords);
-                        if(numMinesAround > 0) {
-                            drawTextAtCoords(numMinesAround, gridCoords);
-                        }
-                    } else {
-                        colorSquare(gridCoords, colorMine);
-                        gameOver = true;
-                    }
+                    revealSquare(gridCoords, square, colorClear, colorMine);
                 } else if(!revealModeOn && !square.revealed) {
                     square.flagged = !square.flagged;
                     // Draw/remove flag at flagged square
@@ -189,6 +180,21 @@ let GameSession = function() {
                         colorSquare(gridCoords, blankColor);
                     }
                 }
+            }
+        }
+
+        function revealSquare(gridCoords, square, colorClear, colorMine) {
+            if (!checkForMine(gridCoords)) {
+                square.revealed = true;
+                colorSquare(gridCoords, colorClear);
+                let numMinesAround = checkNeighborsForMines(gridCoords);
+                if (numMinesAround > 0) {
+                    drawTextAtCoords(numMinesAround, gridCoords);
+                }
+            }
+            else {
+                colorSquare(gridCoords, colorMine);
+                gameOver = true;
             }
         }
     }
