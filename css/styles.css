@@ -16,3 +16,12 @@ body {
     flex-direction: row-reverse;
     justify-content: space-between;
 }
+
+button {
+    background-color: lightgreen;
+    font-size: 1.5em;
+}
+
+body > button {
+    height: 10%;
+}
