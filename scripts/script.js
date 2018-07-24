@@ -20,8 +20,7 @@ let GameSession = function() {
     // letiable letiables
     let revealModeOn = true;
     let gameOver = false;
-    let flaggedSquares = 0;
-    let correctlyPlacedFlags = 0;
+    let revealedSquares = 0;
 
     // Constructor for Square objects
     let Square = function(index, position){
@@ -72,7 +71,6 @@ let GameSession = function() {
     // SETUP GAME
     function setupGame(){
         gameOver = false;
-        flaggedSquares = 0;
         if(!revealModeOn) {
             toggleRevealMode();
         }
@@ -186,7 +184,11 @@ let GameSession = function() {
         function revealSquare(gridCoords, square, colorClear, colorMine) {
             if (!checkForMine(gridCoords)) {
                 square.revealed = true;
+                revealedSquares++;
                 colorSquare(gridCoords, colorClear);
+                if(gridSize - numMines === revealedSquares) {
+                    console.log('You win!');
+                }
                 let numMinesAround = checkNeighborsForMines(gridCoords);
                 if (numMinesAround > 0) {
                     drawTextAtCoords(numMinesAround, gridCoords);
