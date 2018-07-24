@@ -3,24 +3,24 @@ let canvas = document.getElementById("myCanvas");
 let ctx = canvas.getContext("2d");
 
 let GameSession = function() {
-    // Constant letiables
-    let canvasSize = 500;
+    // Constant variables
+    const canvasSize = 500;
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    let flagIMG = setupFlagImage();
+    const blankColor = '#C0C0C0';
+
+
+    // Calculated variables
+    let grid, gridSize;
+
+    // letiable variables
+    let revealModeOn = true;
+    let gameOver = false;
+    let revealedSquares = 0;
     let squareSide = 50;
     let numSquaresX = 10;
     let numSquaresY = 10;
     let numMines = 15;
-    let directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    let flagIMG = setupFlagImage();
-    let blankColor = '#C0C0C0';
-
-
-    // Calculated letiables
-    let grid, gridSize;
-
-    // letiable letiables
-    let revealModeOn = true;
-    let gameOver = false;
-    let revealedSquares = 0;
 
     // Constructor for Square objects
     let Square = function(index, position){
